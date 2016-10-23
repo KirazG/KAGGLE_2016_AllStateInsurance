@@ -1,0 +1,25 @@
+Features: All
+Platform: H2O
+Model: Distributed Random Forest (DRF)
+Hyper Parameters: GridSearch
+Selected Model Params: ntree = 10 | max_depth = 22
+Cross-Validation: No
+
+
+DRF MODEL TUNING PARAMETERS
+===========================
+COLUMN SAMPLING: col_sample_rate_per_tree, mtries 
+TREE DEPTH: max_depth
+# OF TREES: ntrees
+
+
+RF_TUNING_01
+------------
+col_sample_rate_per_tree = 1
+max_depth = 20
+ntrees = 50
+nfolds
+
+
+SN# P9901G85
+MTM: F0AW

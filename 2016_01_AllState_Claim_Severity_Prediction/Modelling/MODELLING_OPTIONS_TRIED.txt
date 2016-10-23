@@ -1,0 +1,53 @@
+=================
+OPTIONS TREID OUT
+=================
+
+======================================================================================================
+DATA: ALL-ORIGINAL			| FEATURES: ALL-ORIGINAL
+======================================================================================================
+GLM - Lasso
+GLM - Ridge
+GLM - ElasticNet @ 0.5
+GLM - Grid Searcch [100-150] Models
+GLM - Cross Validation - 10 Folds
+DRF - Normal
+DRF - Grid Search					==> Best Accuracy @ 100 Trees | 22 Depth
+DRF - Cross Validation - 10 Folds
+GBM - Random Model/Defauly
+GBM - Grid Search
+======================================================================================================
+DATA: ALL-ORIGINAL			| FEATURES: TOP-23 FROM RANDOM FOREST FROM ALL-ORIGINAL
+======================================================================================================
+GLM - Lasso
+GLM - Ridge
+GLM - ElasticNet @ 0.5
+GLM - Grid Searcch [100-150] Models
+GLM - Cross Validation - 10 Folds
+DRF - Cross Validation - 10 Folds
+GBM - 350 Trees
+======================================================================================================
+DATA: TargetY <= 25000		| FEATURES: ALL-ORIGINAL
+======================================================================================================
+GLM - Lasso
+GLM - Ridge
+GLM - ElasticNet @ 0.5
+GLM - Grid Searcch [100-150] Models
+GLM - Cross Validation - 10 Folds
+DRF - Grid Search For [100 trees, 22/25 depth]
+
+===================================
+NOT TRIED OUT SO FAR & ON THE TABLE
+===================================
+
+DATA:			DATA PRE-PROCESSING
+				LOG TRANSFORMATION FOR TARGET Y
+				BOX-COX TRANSFORMATION
+
+FEATURES ENGG:	DIMENSIONALITY REDUCTION - LINEAR (PCA/SVD)
+				DIMENSIONALITY REDUCTION - NON-LINEAR (DEEP LEARNING - AUTOENCODERS)
+				
+LEARNING TYPE:	SUPPORT VECTOR - REGRESSION
+				KNN - REGRESSION
+				NEURAL NETWORK - REGRESSION
+				CLUSTERING
+				XGBOOST
