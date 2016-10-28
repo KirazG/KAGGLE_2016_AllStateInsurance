@@ -7,7 +7,7 @@ rm(list = ls(all.names = TRUE))
 library(h2o)
 
 # Initialize H2O
-h2o.init(nthreads = -1, max_mem_size = "1G")
+h2o.init(nthreads = -1, min_mem_size = "4G")
 
 # Cleanup H2O Enviroment
 #h2o.removeAll()
