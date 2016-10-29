@@ -13,18 +13,18 @@ rm(list = ls(all.names = TRUE))
 library(h2o)
 
 # Initialize H2O :: DELL_LAPTOP
-#h2o.init(nthreads = -1, min_mem_size = "6G")
+h2o.init(nthreads = -1, min_mem_size = "6G")
 
 # Initialize H2O :: LENOVO_AIO
-h2o.init(nthreads = -1, min_mem_size = "3500M")
+#h2o.init(nthreads = -1, min_mem_size = "3500M")
 
 # Read Train & Test into H2O - DELL_LAPTOP
-#AllStateTrain.hex = h2o.uploadFile(path = "C:/02 KAGGLE/2016_AllState_Claim_Severity_Prediction/train.csv", destination_frame = "AllStateTrain.hex", header = TRUE)
-#AllStateTest.hex = h2o.uploadFile(path = "C:/02 KAGGLE/2016_AllState_Claim_Severity_Prediction/test.csv", destination_frame = "AllStateTest.hex", header = TRUE)
+AllStateTrain.hex = h2o.uploadFile(path = "C:/02 KAGGLE/2016_AllState_Claim_Severity_Prediction/train.csv", destination_frame = "AllStateTrain.hex", header = TRUE)
+AllStateTest.hex = h2o.uploadFile(path = "C:/02 KAGGLE/2016_AllState_Claim_Severity_Prediction/test.csv", destination_frame = "AllStateTest.hex", header = TRUE)
 
 # Read Train & Test into H2O - LENOVO_AIO
-AllStateTrain.hex = h2o.uploadFile(path = "D:/10 CONTINUOUS LEARNING/83 KAGGLE/KAGGLE_COMPETITIONS/2016_01_AllState_Claim_Severity_Prediction/train.csv", destination_frame = "AllStateTrain.hex", header = TRUE)
-AllStateTest.hex = h2o.uploadFile(path = "D:/10 CONTINUOUS LEARNING/83 KAGGLE/KAGGLE_COMPETITIONS/2016_01_AllState_Claim_Severity_Prediction/test.csv", destination_frame = "AllStateTest.hex", header = TRUE)
+#AllStateTrain.hex = h2o.uploadFile(path = "D:/10 CONTINUOUS LEARNING/83 KAGGLE/KAGGLE_COMPETITIONS/2016_01_AllState_Claim_Severity_Prediction/train.csv", destination_frame = "AllStateTrain.hex", header = TRUE)
+#AllStateTest.hex = h2o.uploadFile(path = "D:/10 CONTINUOUS LEARNING/83 KAGGLE/KAGGLE_COMPETITIONS/2016_01_AllState_Claim_Severity_Prediction/test.csv", destination_frame = "AllStateTest.hex", header = TRUE)
 
 
 # Transform "loss" variable to Log(loss)
@@ -461,4 +461,60 @@ gridLRate5 <-       h2o.grid(algorithm = "gbm",
                              ## score every 5 trees to make early stopping reproducible
                              score_tree_interval = 5)
 
+### For Kaggle Submission: New Model based on the last round of tuning
 
+HyperParam = list(learn_rate = 0.0125, ntrees = 1000, max_depth = 10)
+
+KaggelModel1 <-       h2o.grid(algorithm = "gbm", 
+                               x = IndAttrib,
+                               y = DepAttrib, 
+                               training_frame = ModTrain.hex, 
+                               grid_id = "KAGGLE_MODEL_1",
+                               hyper_params = HyperParam,
+                               validation_frame = ModTest.hex, 
+                               seed = 1, 
+                               distribution = "gaussian",
+                               stopping_rounds = 5, 
+                               stopping_tolerance = 0.0001,
+                               stopping_metric = "deviance",
+                               ## sample 80% of rows per tree
+                               sample_rate = 0.8,
+                               ## sample 80% of columns per split
+                               col_sample_rate = 0.8,
+                               ## score every 5 trees to make early stopping reproducible
+                               score_tree_interval = 5)
+
+
+TopModel = h2o.getModel(model_id = KaggelModel1@model_ids[[1]])
+# Generate Predictions
+predGBM = h2o.predict(object = TopModel, newdata = AllStateTest.hex)
+# Following step is required only for Log(loss) predictions
+predGBM = h2o.exp(predGBM)
+dfGBMPredictions = as.data.frame(h2o.cbind(TestId, predGBM))
+names(dfGBMPredictions) = c("id", "loss")
+write.csv(x = dfGBMPredictions, file = "H2O_GBM_29102016_02.csv", row.names = FALSE)
+
+## BEST KAGGLE SUBMISSION SO FAR - SCORED: 1156.34872 | BENCHMARK MAE: 0.423762
+
+### BUILDING A MODEL WITH 5 & 10 DEPTH TO SEE THE IMPACT
+
+HyperParam = list(learn_rate = 0.0125, ntrees = 1000, max_depth = c(5,15))
+
+KaggelModel2 <-       h2o.grid(algorithm = "gbm", 
+                               x = IndAttrib,
+                               y = DepAttrib, 
+                               training_frame = ModTrain.hex, 
+                               grid_id = "KAGGLE_MODEL_2",
+                               hyper_params = HyperParam,
+                               validation_frame = ModTest.hex, 
+                               seed = 1, 
+                               distribution = "gaussian",
+                               stopping_rounds = 5, 
+                               stopping_tolerance = 0.0001,
+                               stopping_metric = "deviance",
+                               ## sample 80% of rows per tree
+                               sample_rate = 0.8,
+                               ## sample 80% of columns per split
+                               col_sample_rate = 0.8,
+                               ## score every 5 trees to make early stopping reproducible
+                               score_tree_interval = 5)

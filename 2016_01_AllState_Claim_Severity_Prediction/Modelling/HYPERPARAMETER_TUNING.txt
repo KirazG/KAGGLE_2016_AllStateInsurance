@@ -43,11 +43,11 @@ max_depth = 4/5 - MAX=10
 
 LEVEL_02:
 
-sample_rate = 0.8
+sample_rate = 0.81
 col_sample_rate = 0.7
 
 ------------------------------------
-RANDOM DISCRETE - SEARCH OBSEVRATION
+RANDOM DISCRETE - SEARCH OBSERVATION
 ------------------------------------
 
 1. At LearningRate = 0.15 | MaxDepth = 10 >> The learning stbailizes arodun 270 trees
@@ -61,33 +61,6 @@ RANDOM DISCRETE - SEARCH OBSEVRATION
 9. OVERALL: Lower learning rate models are running better than higher. Keep LR Range: 0.0-0.1
 10: LR 0.00-0.05 [For 2 decimal significance] >> NTRESS: 200-600
 	LR 0.05-0.10 [For 2 decimal significance] >> NTRESS: 100-250
-	
---------------------
-INFORMATION EXTRACT
---------------------
-ntrees
-max_depth
-learn_rate
-learn_rate_annealing
-col_sample_rate
-stopping_rounds
-stopping_metric
-stopping_tolerance
-score_tree_interval
-distribution
-Min_Val_Dev
-TrainDev@Min_Val_Dev
-Min_Val_MAE
-TrainMAE@Min_Val_MAE
-ntree@Min_Val_Dev
-ntree@Min_Val_MAE
 
-------------------
-4 GRIDs: 36-Models
-------------------
-GRID_LEARNRATE_NOANNEAL_2
-GRID_LEARNRATE_NOANNEAL_3
-GRID_LEARNRATE_NOANNEAL_4
-GRID_LEARNRATE_NOANNEAL_5
-
-
+11: For Depth = 10 >> Keep the learning rate STRICTLY between [0.1-0.2] OR LOOSELY between - [0.1-0.3]
+12: If choosing a Laerning Rate < 0.01 >> It will need 1200+ tress (may be ~1500 or ~2000)
