@@ -1,5 +1,7 @@
 #####################################################################################
-##### EXPERIMENT WITH KAGGLE DATA SET MODELLING
+#####################################################################################
+##### KAGGLE COMPETITION DATASET: ALL STATE INSURANCE LOSS PREDICTION
+#####################################################################################
 #####################################################################################
 ##### FEATURE ENGINEERING: PCA FOR NUMERIC VARIABLES | loss >> LOG(loss) TRANSFORM
 ##### FRAMEWORK: H2O
@@ -10,13 +12,20 @@
 rm(list = ls(all.names = TRUE))
 library(h2o)
 
-# Initialize H2O
-h2o.init(nthreads = -1, min_mem_size = "6G")
+# Initialize H2O :: DELL_LAPTOP
+#h2o.init(nthreads = -1, min_mem_size = "6G")
 
-# Read Train & Test into H2O
-AllStateTrain.hex = h2o.uploadFile(path = "C:/02 KAGGLE/2016_AllState_Claim_Severity_Prediction/train.csv", destination_frame = "AllStateTrain.hex", header = TRUE)
+# Initialize H2O :: LENOVO_AIO
+h2o.init(nthreads = -1, min_mem_size = "3500M")
 
-AllStateTest.hex = h2o.uploadFile(path = "C:/02 KAGGLE/2016_AllState_Claim_Severity_Prediction/test.csv", destination_frame = "AllStateTest.hex", header = TRUE)
+# Read Train & Test into H2O - DELL_LAPTOP
+#AllStateTrain.hex = h2o.uploadFile(path = "C:/02 KAGGLE/2016_AllState_Claim_Severity_Prediction/train.csv", destination_frame = "AllStateTrain.hex", header = TRUE)
+#AllStateTest.hex = h2o.uploadFile(path = "C:/02 KAGGLE/2016_AllState_Claim_Severity_Prediction/test.csv", destination_frame = "AllStateTest.hex", header = TRUE)
+
+# Read Train & Test into H2O - LENOVO_AIO
+AllStateTrain.hex = h2o.uploadFile(path = "D:/10 CONTINUOUS LEARNING/83 KAGGLE/KAGGLE_COMPETITIONS/2016_01_AllState_Claim_Severity_Prediction/train.csv", destination_frame = "AllStateTrain.hex", header = TRUE)
+AllStateTest.hex = h2o.uploadFile(path = "D:/10 CONTINUOUS LEARNING/83 KAGGLE/KAGGLE_COMPETITIONS/2016_01_AllState_Claim_Severity_Prediction/test.csv", destination_frame = "AllStateTest.hex", header = TRUE)
+
 
 # Transform "loss" variable to Log(loss)
 AllStateTrain.hex$loss = h2o.log(AllStateTrain.hex$loss)
@@ -270,15 +279,16 @@ gridLRate <-       h2o.grid(algorithm = "gbm",
                             ## score every 10 trees to make early stopping reproducible
                             score_tree_interval = 5)
 
-# tuning iteraation 2
+# tuning iteration 2: RandomDiscrete Tuning
 
-HyperParam = list(learn_rate = seq(0.01,0.2,0.01), ntrees = c(150,200,300,400,500,750,1000,5000))
+HyperParam = list(learn_rate = seq(0.01,0.15,0.01), 
+                  ntrees = c(900,1200))
 
-gridLRate2 <-       h2o.grid(algorithm = "gbm", 
+gridLRate3 <-       h2o.grid(algorithm = "gbm", 
                             x = IndAttrib,
                             y = DepAttrib, 
                             training_frame = ModTrain.hex, 
-                            grid_id = "GRID_LEARNRATE_NOANNEAL_2",
+                            grid_id = "GRID_LEARNRATE_NOANNEAL_3",
                             hyper_params = HyperParam,
                             validation_frame = ModTest.hex, 
                             seed = 1, 
@@ -291,12 +301,164 @@ gridLRate2 <-       h2o.grid(algorithm = "gbm",
                             ## learning rate annealing: learning_rate shrinks by 1% after every tree 
                             #learn_rate_annealing = 0.95,
                             ## Early stopping configuration
-                            stopping_rounds = 3, 
-                            stopping_tolerance = 0.0001,
-                            stopping_metric = "MSE",
+                            ##stopping_rounds = 3, 
+                            ##stopping_tolerance = 0.0001,
+                            ##stopping_metric = "MSE",
                             ## sample 80% of rows per tree
                             sample_rate = 0.8,
                             ## sample 80% of columns per split
                             col_sample_rate = 0.8,
-                            ## score every 10 trees to make early stopping reproducible
-                            score_tree_interval = 5)
+                            ## score every 5 trees to make early stopping reproducible
+                            score_tree_interval = 5,
+                            ## Search Strategy for Hyperparameter space
+                            search_criteria =  list(strategy = "RandomDiscrete", 
+                                                    max_runtime_secs = 12600,
+                                                    stopping_rounds = 5, 
+                                                    stopping_tolerance = 0.0001,
+                                                    stopping_metric = "deviance"))
+
+
+G1 <- h2o.getGrid("GRID_LEARNRATE_NOANNEAL_3",sort_by = "mse")
+
+M1 <- h2o.getModel(model_id = G1@model_ids[[1]])
+
+lapply(lapply(G1@model_ids, function(x){h2o.getModel(model_id = x)}), 
+       function(M1){M1@model$scoring_history$number_of_trees[which.min(M1@model$scoring_history$validation_mae)]})
+
+#-------------------------------------------------------
+### Stratified Tunning For NTrees: Cartesian Grid Search
+#-------------------------------------------------------
+
+### Strata 1: 0.00-0.05
+HyperParam = list(learn_rate = seq(0.005,0.05,0.005), 
+                  ntrees = c(600))
+
+gridLRate4 <-       h2o.grid(algorithm = "gbm", 
+                             x = IndAttrib,
+                             y = DepAttrib, 
+                             training_frame = ModTrain.hex, 
+                             grid_id = "GRID_LEARNRATE_NOANNEAL_4",
+                             hyper_params = HyperParam,
+                             validation_frame = ModTest.hex, 
+                             seed = 1, 
+                             distribution = "gaussian",
+                             max_depth = 10,
+                             #ntrees = 200,
+                             ## smaller learning rate is better
+                             ## Due to learning_rate_annealing, we can start with a bigger learning rate
+                             #learn_rate = 0.05,                                                         
+                             ## learning rate annealing: learning_rate shrinks by 1% after every tree 
+                             #learn_rate_annealing = 0.95,
+                             ## Early stopping configuration
+                             stopping_rounds = 5, 
+                             stopping_tolerance = 0.0001,
+                             stopping_metric = "deviance",
+                             ## sample 80% of rows per tree
+                             sample_rate = 0.8,
+                             ## sample 80% of columns per split
+                             col_sample_rate = 0.8,
+                             ## score every 5 trees to make early stopping reproducible
+                             score_tree_interval = 5)
+
+### Strata 1: 0.055-0.100
+HyperParam = list(learn_rate = seq(0.055,0.100,0.005), 
+                  ntrees = c(300))
+
+gridLRate5 <-       h2o.grid(algorithm = "gbm", 
+                             x = IndAttrib,
+                             y = DepAttrib, 
+                             training_frame = ModTrain.hex, 
+                             grid_id = "GRID_LEARNRATE_NOANNEAL_5",
+                             hyper_params = HyperParam,
+                             validation_frame = ModTest.hex, 
+                             seed = 1, 
+                             distribution = "gaussian",
+                             max_depth = 10,
+                             #ntrees = 200,
+                             ## smaller learning rate is better
+                             ## Due to learning_rate_annealing, we can start with a bigger learning rate
+                             #learn_rate = 0.05,                                                         
+                             ## learning rate annealing: learning_rate shrinks by 1% after every tree 
+                             #learn_rate_annealing = 0.95,
+                             ## Early stopping configuration
+                             stopping_rounds = 5, 
+                             stopping_tolerance = 0.0001,
+                             stopping_metric = "deviance",
+                             ## sample 80% of rows per tree
+                             sample_rate = 0.8,
+                             ## sample 80% of columns per split
+                             col_sample_rate = 0.8,
+                             ## score every 5 trees to make early stopping reproducible
+                             score_tree_interval = 5)
+
+### BUILDING THE BEST MODEL & GIVE IT A TRY FOR KAGGLE SUBMISSION
+### BEST MODEL PARAMETER DERIVED BASED ON THE HYPER PARAMETERS TUNED IN LAST 4 GRIDS
+
+HyperParam = list(learn_rate = 0.02, ntrees = 600, max_depth = 10)
+
+KaggelModel1 <-       h2o.grid(algorithm = "gbm", 
+                             x = IndAttrib,
+                             y = DepAttrib, 
+                             training_frame = ModTrain.hex, 
+                             grid_id = "KAGGLE_MODEL_1",
+                             hyper_params = HyperParam,
+                             validation_frame = ModTest.hex, 
+                             seed = 1, 
+                             distribution = "gaussian",
+                             stopping_rounds = 5, 
+                             stopping_tolerance = 0.0001,
+                             stopping_metric = "deviance",
+                             ## sample 80% of rows per tree
+                             sample_rate = 0.8,
+                             ## sample 80% of columns per split
+                             col_sample_rate = 0.8,
+                             ## score every 5 trees to make early stopping reproducible
+                             score_tree_interval = 5)
+
+
+TopModel = h2o.getModel(model_id = KaggelModel1@model_ids[[1]])
+# Generate Predictions
+predGBM = h2o.predict(object = TopModel, newdata = AllStateTest.hex)
+# Following step is required only for Log(loss) predictions
+predGBM = h2o.exp(predGBM)
+dfGBMPredictions = as.data.frame(h2o.cbind(TestId, predGBM))
+names(dfGBMPredictions) = c("id", "loss")
+write.csv(x = dfGBMPredictions, file = "H2O_GBM_29102016_01.csv", row.names = FALSE)
+
+### THIS SUBMISSION SCORED: 1158.XXXX ON KAGGLE | MAE BENCHMARK: 0.423925
+
+
+### FURTHER TUNING OF LEARNING RATE AT DEPTH = 10 | AFTER KAGGLE SUBMISSION
+
+### Strata 1: 0.055-0.100
+HyperParam = list(learn_rate = seq(0.005,0.040,0.0025), 
+                  ntrees = c(1200))
+
+gridLRate5 <-       h2o.grid(algorithm = "gbm", 
+                             x = IndAttrib,
+                             y = DepAttrib, 
+                             training_frame = ModTrain.hex, 
+                             grid_id = "GRID_LEARNRATE_NOANNEAL_6",
+                             hyper_params = HyperParam,
+                             validation_frame = ModTest.hex, 
+                             seed = 1, 
+                             distribution = "gaussian",
+                             max_depth = 10,
+                             #ntrees = 200,
+                             ## smaller learning rate is better
+                             ## Due to learning_rate_annealing, we can start with a bigger learning rate
+                             #learn_rate = 0.05,                                                         
+                             ## learning rate annealing: learning_rate shrinks by 1% after every tree 
+                             #learn_rate_annealing = 0.95,
+                             ## Early stopping configuration
+                             stopping_rounds = 5, 
+                             stopping_tolerance = 0.0001,
+                             stopping_metric = "deviance",
+                             ## sample 80% of rows per tree
+                             sample_rate = 0.8,
+                             ## sample 80% of columns per split
+                             col_sample_rate = 0.8,
+                             ## score every 5 trees to make early stopping reproducible
+                             score_tree_interval = 5)
+
+

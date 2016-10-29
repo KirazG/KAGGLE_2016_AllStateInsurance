@@ -45,3 +45,49 @@ LEVEL_02:
 
 sample_rate = 0.8
 col_sample_rate = 0.7
+
+------------------------------------
+RANDOM DISCRETE - SEARCH OBSEVRATION
+------------------------------------
+
+1. At LearningRate = 0.15 | MaxDepth = 10 >> The learning stbailizes arodun 270 trees
+2. At LearningRate = 0.03 | MaxDepth = 10 >> The learning stbailizes arodun 880 trees
+3. stopping_metric = "MSE" does not seem to be working >> Use "deviance" instead
+4. Learning rate > 0.15 does not stabilizes the error and have a tendancy overfit the training data >> Test error increases rapidly for > 0.15 Learning rate
+5. Learning rate = 0.02 | MaxDepth = 10 >> Stabilize ~600 Trees - Increase thereafter
+6. Learning rate = 0.05 | MaxDepth = 10 >> Stabilize ~235 Trees - Increase thereafter
+7. Learning rate = 0.06 | MaxDepth = 10 >> Stabilize ~185 Trees - Increase thereafter
+8. Learning rate = 0.03 | MaxDepth = 10 >> Stabilize ~385-~465 Trees - Increase thereafter | Broad rnage stability
+9. OVERALL: Lower learning rate models are running better than higher. Keep LR Range: 0.0-0.1
+10: LR 0.00-0.05 [For 2 decimal significance] >> NTRESS: 200-600
+	LR 0.05-0.10 [For 2 decimal significance] >> NTRESS: 100-250
+	
+--------------------
+INFORMATION EXTRACT
+--------------------
+ntrees
+max_depth
+learn_rate
+learn_rate_annealing
+col_sample_rate
+stopping_rounds
+stopping_metric
+stopping_tolerance
+score_tree_interval
+distribution
+Min_Val_Dev
+TrainDev@Min_Val_Dev
+Min_Val_MAE
+TrainMAE@Min_Val_MAE
+ntree@Min_Val_Dev
+ntree@Min_Val_MAE
+
+------------------
+4 GRIDs: 36-Models
+------------------
+GRID_LEARNRATE_NOANNEAL_2
+GRID_LEARNRATE_NOANNEAL_3
+GRID_LEARNRATE_NOANNEAL_4
+GRID_LEARNRATE_NOANNEAL_5
+
+

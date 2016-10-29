@@ -1,0 +1,54 @@
+===========================
+ALL STATE DATA OBSERVATIONS
+===========================
+
+#1	Missing Values: NONE
+#2	Data Imputation: NOT REQUIRED
+#3	Data Type Distribution:
+	001 - ID Attribute
+	116 - Categoritcal Attributes
+	015 - Continuous Attributes
+#4	Continuous Attributes:
+	ALL EXCEPT "loss": On a scale of 0-1
+	"loss": HIGHLY RIGHT skewed distribution with multiple outliers
+	
+===========================
+DATA PRE-PROCESSING OPTIONS
+===========================
+"loss" variable:
+	- Data can be segment based on the loss variable value. E.g. select data only upto loss = 25000
+	- Possible Cutoffs:
+		- @99.25% WHERE loss <= 15000
+		- @99.99% WHERE loss <= 40000
+		- @100.0% WHERE loss <= 52000
+		- USE ALL DATA
+	- Scaling of loss variable between 0-1 ?
+	
+===================
+FEATURE ENGINEERING
+===================
+#1	Random Forest
+#2 	Boruta Package
+#3	Principal Component Analysis
+#4	Deep Learning: AutoEncoders
+#5	Deep Learning: AutoEncoders + Random Forest
+#6	Deep Learning: AutoEncoders + PCA
+
+=======================
+MODELLING IDEAS/OPTIONS
+=======================
+#1	Multiple Linear Regression (LM)
+#2	Multiple Linear Regression (LM) + StepAIC
+#3	Regression using - CART
+#4	Regression using - Random Forest
+#5 	Support Vector Regression
+#6 	Regression using - GLM [Lasso / Ridge / ElasticNet]	
+#7 	Regression using - GLM [Lasso / Ridge / ElasticNet] + Cross Validation
+#8	KNN Regression
+#9  Cluster-Then-Predict
+
+================================
+ADVANCED MODELLING IDEAS/OPTIONS
+================================
+#1	Ensembles
+#2	Boosting
