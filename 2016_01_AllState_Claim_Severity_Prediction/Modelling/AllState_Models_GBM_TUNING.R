@@ -13,7 +13,7 @@ rm(list = ls(all.names = TRUE))
 library(h2o)
 
 # Initialize H2O :: DELL_LAPTOP
-h2o.init(nthreads = -1, min_mem_size = "6G")
+h2o.init(nthreads = -1, min_mem_size = "7G")
 
 # Initialize H2O :: LENOVO_AIO
 #h2o.init(nthreads = -1, min_mem_size = "3500M")
@@ -518,3 +518,119 @@ KaggelModel2 <-       h2o.grid(algorithm = "gbm",
                                col_sample_rate = 0.8,
                                ## score every 5 trees to make early stopping reproducible
                                score_tree_interval = 5)
+
+### BUILDING A MODEL WITH VARIOUS DEPTH & CONSTANT LEARNING RATE
+
+#HyperParam = list(learn_rate = 0.0125, ntrees = 1500, max_depth = c(9,11,12,13,14,15,16,17,18))
+HyperParam = list(learn_rate = 0.02, ntrees = 1200, max_depth = c(4,5,6,7,8,9,10,11,12,13))
+
+KaggelGrid4 <-       h2o.grid(algorithm = "gbm", 
+                               x = IndAttrib,
+                               y = DepAttrib, 
+                               training_frame = ModTrain.hex, 
+                               grid_id = "KAGGLE_GRID_4",
+                               hyper_params = HyperParam,
+                               validation_frame = ModTest.hex, 
+                               seed = 1, 
+                               distribution = "gaussian",
+                               stopping_rounds = 5, 
+                               stopping_tolerance = 0.0001,
+                               stopping_metric = "deviance",
+                               ## sample 80% of rows per tree
+                               sample_rate = 0.8,
+                               ## sample 80% of columns per split
+                               col_sample_rate = 0.8,
+                               ## score every 5 trees to make early stopping reproducible
+                               score_tree_interval = 5)
+                               #search_criteria = list(strategy = "RandomDiscrete",
+                                #                     max_runtime_secs = 15000))
+
+
+KaggleGrid = h2o.getGrid("KAGGLE_GRID_4", sort_by = "mse")
+#TopModel = h2o.getModel(model_id = KaggleGrid@model_ids[[1]])       # MAX_DEPTH = 7
+TopModel = h2o.getModel(model_id = KaggleGrid@model_ids[[2]])       # MAX_DEPTH = 8
+# Generate Predictions
+predGBM = h2o.predict(object = TopModel, newdata = AllStateTest.hex)
+# Following step is required only for Log(loss) predictions
+predGBM = h2o.exp(predGBM)
+dfGBMPredictions = as.data.frame(h2o.cbind(TestId, predGBM))
+names(dfGBMPredictions) = c("id", "loss")
+write.csv(x = dfGBMPredictions, file = "H2O_GBM_01112016_02.csv", row.names = FALSE)
+
+
+### BEST KAGGLE SUBMISSION SO FAR - SCORED: 1154.11922 | BENCHMARK MAE: 0.4234688
+
+## Trying learning rate annealing.
+HyperParam = list(learn_rate = 0.02, ntrees = 2500, max_depth = c(7), learn_rate_annealing = c(0.999, 0.997, 0.995, 0.990, 0.980, 0.950, 0.900))
+
+KaggleGrid5 <-       h2o.grid(algorithm = "gbm", 
+                              x = IndAttrib,
+                              y = DepAttrib, 
+                              training_frame = ModTrain.hex, 
+                              grid_id = "GBM_GRID_LR_ANNEAL_1",
+                              hyper_params = HyperParam,
+                              validation_frame = ModTest.hex, 
+                              seed = 1, 
+                              distribution = "gaussian",
+                              stopping_rounds = 5, 
+                              stopping_tolerance = 0.0001,
+                              stopping_metric = "deviance",
+                              ## sample 80% of rows per tree
+                              sample_rate = 0.8,
+                              ## sample 80% of columns per split
+                              col_sample_rate = 0.8,
+                              ## score every 5 trees to make early stopping reproducible
+                              score_tree_interval = 5)
+
+
+KaggleGrid = h2o.getGrid("GBM_GRID_LR_ANNEAL_1", sort_by = "mse")
+TopModel = h2o.getModel(model_id = KaggleGrid@model_ids[[1]])       # MAX_DEPTH = 8
+# Generate Predictions
+predGBM = h2o.predict(object = TopModel, newdata = AllStateTest.hex)
+# Following step is required only for Log(loss) predictions
+predGBM = h2o.exp(predGBM)
+dfGBMPredictions = as.data.frame(h2o.cbind(TestId, predGBM))
+names(dfGBMPredictions) = c("id", "loss")
+write.csv(x = dfGBMPredictions, file = "H2O_GBM_01112016_03.csv", row.names = FALSE)
+### BEST KAGGLE SUBMISSION SO FAR - SCORED: 1154.00009 | BENCHMARK MAE: 0.423455
+
+#####################################################################################
+### LEARNING RATE ANNEALING:
+###     1. High values of rate annealing has a big impact on model learning.
+###             E.g. Annealing rate of 0.90 results in a very less learning esp. if the starting rate is                  too small. The learning rate decays very rapidly resulting in no learning.
+###     2. For a smaller initial learning rate:
+###             STRICTLY: Choose learning rate annealing in the range of 0.995-0.999
+###             LOOSLY: Choose learning rate annealing in the range of 0.990-0.999
+#####################################################################################
+
+### TRYING HIGHER LEARNING RATES FOR FASTER CONVEREGENCE
+
+HyperParam = list(learn_rate = 0.03, ntrees = 1200, max_depth = c(4,5,6,7,8,9,10), learn_rate_annealing = c(1,0.999,0.998))
+
+KaggleGrid6 <-       h2o.grid(algorithm = "gbm", 
+                              x = IndAttrib,
+                              y = DepAttrib, 
+                              training_frame = ModTrain.hex, 
+                              grid_id = "GRID_LR_0_PT_03",
+                              hyper_params = HyperParam,
+                              validation_frame = ModTest.hex, 
+                              seed = 1, 
+                              distribution = "gaussian",
+                              stopping_rounds = 5, 
+                              stopping_tolerance = 0.0001,
+                              stopping_metric = "deviance",
+                              ## sample 80% of rows per tree
+                              sample_rate = 0.8,
+                              ## sample 80% of columns per split
+                              col_sample_rate = 0.8,
+                              score_tree_interval = 5)
+
+KaggleGrid = h2o.getGrid("GRID_LR_0_PT_03", sort_by = "mse")
+TopModel = h2o.getModel(model_id = KaggleGrid@model_ids[[1]])       # MAX_DEPTH = 8
+# Generate Predictions
+predGBM = h2o.predict(object = TopModel, newdata = AllStateTest.hex)
+# Following step is required only for Log(loss) predictions
+predGBM = h2o.exp(predGBM)
+dfGBMPredictions = as.data.frame(h2o.cbind(TestId, predGBM))
+names(dfGBMPredictions) = c("id", "loss")
+write.csv(x = dfGBMPredictions, file = "H2O_GBM_02112016_01.csv", row.names = FALSE)

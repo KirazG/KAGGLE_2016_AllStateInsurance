@@ -6,6 +6,15 @@ Selected Model Params: ntree = 10 | max_depth = 22
 Cross-Validation: No
 
 
+Features: All
+Platform: H2O
+Model: GBM
+Hyper Parameters: 
+Selected Model Params: ntree = 1200 | max_depth = 7 | LearningRate = 0.2 | Annealing = No | Col & Row Sample Rate = 0.8
+Cross-Validation: No
+
+
+
 DRF MODEL TUNING PARAMETERS
 ===========================
 COLUMN SAMPLING: col_sample_rate_per_tree, mtries 
