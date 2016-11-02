@@ -634,3 +634,8 @@ predGBM = h2o.exp(predGBM)
 dfGBMPredictions = as.data.frame(h2o.cbind(TestId, predGBM))
 names(dfGBMPredictions) = c("id", "loss")
 write.csv(x = dfGBMPredictions, file = "H2O_GBM_02112016_01.csv", row.names = FALSE)
+
+##########################################################################################
+#### MAE BASED ON ORIGINAL FEATURES HAVE PLATUED-NEED TO EXPLORE BETTER FEATURES WITH GBM
+#### AS OF 2-NOV-2016 REFOCUSSING ON INSOFE PROJECT
+##########################################################################################
