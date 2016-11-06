@@ -5,7 +5,7 @@
 #GRID_Ids = c("KAGGLE_GRID_4")
 #GRID_Ids = c("GBM_GRID_LR_ANNEAL_1", "KAGGLE_GRID_4")
 #GRID_Ids = c("GBM_GRID_LR_ANNEAL_1")
-GRID_Ids = c("GRID_LR_0_PT_03")
+GRID_Ids = c("GRID_GBM_05")
 
 #-----------------------------------------
 # EMPTY DATA FRAMES FOR CONSOLIDATING DATA
@@ -31,6 +31,7 @@ for(i in 1:length(GRID_Ids))
   learn_rate = unlist(lapply(lapply(GRID@model_ids, function(x){h2o.getModel(x)}), function(y){y@allparameters$learn_rate}))
   learn_rate_annealing = unlist(lapply(lapply(GRID@model_ids, function(x){h2o.getModel(x)}), function(y){y@allparameters$learn_rate_annealing}))
   col_sample_rate = unlist(lapply(lapply(GRID@model_ids, function(x){h2o.getModel(x)}), function(y){y@allparameters$col_sample_rate}))
+  sample_rate = unlist(lapply(lapply(GRID@model_ids, function(x){h2o.getModel(x)}), function(y){y@allparameters$sample_rate}))
   stopping_rounds = unlist(lapply(lapply(GRID@model_ids, function(x){h2o.getModel(x)}), function(y){y@allparameters$stopping_rounds}))
   stopping_metric = unlist(lapply(lapply(GRID@model_ids, function(x){h2o.getModel(x)}), function(y){y@allparameters$stopping_metric}))
   stopping_tolerance = unlist(lapply(lapply(GRID@model_ids, function(x){h2o.getModel(x)}), function(y){y@allparameters$stopping_tolerance}))
@@ -56,9 +57,7 @@ for(i in 1:length(GRID_Ids))
   
   # COMBINE EXTRACTED RESULTS VERTICALLY
   
-  df1 = cbind(ModelName, ntrees, max_depth, learn_rate, learn_rate_annealing, col_sample_rate, stopping_rounds, stopping_metric, stopping_tolerance, 
-              score_tree_interval, distribution, Min_Val_Dev, TrainDev_At_Min_Val_Dev, ntree_At_Min_Val_Dev, Min_Val_MAE, TrainMAE_At_Min_Val_MAE,
-              ntree_At_Min_Val_MAE, MaxTreesBuilt)
+  df1 = cbind(ModelName, ntrees, max_depth, learn_rate, learn_rate_annealing, col_sample_rate, sample_rate, stopping_rounds, stopping_metric, stopping_tolerance, score_tree_interval, distribution, Min_Val_Dev, TrainDev_At_Min_Val_Dev, ntree_At_Min_Val_Dev, Min_Val_MAE, TrainMAE_At_Min_Val_MAE, ntree_At_Min_Val_MAE, MaxTreesBuilt)
   
   # UPDATE FINAL DATA FRAMES: MODEL PARAMETERS + SCORING DATA + IMPORTANT VARIABLS
   
