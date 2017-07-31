@@ -16,18 +16,18 @@ library(xgboost)
 library(dummies)
 
 # Initialize H2O :: DELL_LAPTOP
-h2o.init(nthreads = -1, min_mem_size = "5G")
+#h2o.init(nthreads = -1, min_mem_size = "5G")
 
 # Initialize H2O :: LENOVO_AIO
-#h2o.init(nthreads = -1, min_mem_size = "3500M")
+h2o.init(nthreads = -1, min_mem_size = "3500M")
 
 # Read Train & Test into H2O - DELL_LAPTOP
-AllStateTrain.hex = h2o.uploadFile(path = "C:/02 KAGGLE/2016_AllState_Claim_Severity_Prediction/train.csv", destination_frame = "AllStateTrain.hex", header = TRUE)
-AllStateTest.hex = h2o.uploadFile(path = "C:/02 KAGGLE/2016_AllState_Claim_Severity_Prediction/test.csv", destination_frame = "AllStateTest.hex", header = TRUE)
+#AllStateTrain.hex = h2o.uploadFile(path = "C:/02 KAGGLE/2016_AllState_Claim_Severity_Prediction/train.csv", destination_frame = "AllStateTrain.hex", header = TRUE)
+#AllStateTest.hex = h2o.uploadFile(path = "C:/02 KAGGLE/2016_AllState_Claim_Severity_Prediction/test.csv", destination_frame = "AllStateTest.hex", header = TRUE)
 
 # Read Train & Test into H2O - LENOVO_AIO
-#AllStateTrain.hex = h2o.uploadFile(path = "D:/10 CONTINUOUS LEARNING/83 KAGGLE/KAGGLE_COMPETITIONS/2016_01_AllState_Claim_Severity_Prediction/train.csv", destination_frame = "AllStateTrain.hex", header = TRUE)
-#AllStateTest.hex = h2o.uploadFile(path = "D:/10 CONTINUOUS LEARNING/83 KAGGLE/KAGGLE_COMPETITIONS/2016_01_AllState_Claim_Severity_Prediction/test.csv", destination_frame = "AllStateTest.hex", header = TRUE)
+AllStateTrain.hex = h2o.uploadFile(path = "D:/10 CONTINUOUS LEARNING/83 KAGGLE/KAGGLE_COMPETITIONS/2016_01_AllState_Claim_Severity_Prediction/train.csv", destination_frame = "AllStateTrain.hex", header = TRUE)
+AllStateTest.hex = h2o.uploadFile(path = "D:/10 CONTINUOUS LEARNING/83 KAGGLE/KAGGLE_COMPETITIONS/2016_01_AllState_Claim_Severity_Prediction/test.csv", destination_frame = "AllStateTest.hex", header = TRUE)
 
 # Save and remove id column from Train & Test dataset
 TrainId = AllStateTrain.hex$id
@@ -81,6 +81,8 @@ IndAttrib = setdiff(names(dfModTrain), DepAttrib)
 #####################################################################################
 
 
-xgbParams = list(objective = "reg:linear", eta = 0.3, max.depth = 5, subsample = 0.5, colsample_bytree = 0.5)
+xgbParams = list(objective = "reg:linear", eta = 0.3, max.depth = 5, 
+                 subsample = 0.5, colsample_bytree = 0.5)
 
-xgbModel001 = xgboost(data = data.matrix(frame = dfModTrain), label = "loss", params = xbgParams, nrounds = 1, verbose = 2, early.stop.round = 3,maximize = TRUE )
+xgbModel001 = xgboost(data = data.matrix(frame = dfModTrain), label = "loss", params = xbgParams, 
+                      nrounds = 1, verbose = 2, early.stop.round = 3,maximize = TRUE )
